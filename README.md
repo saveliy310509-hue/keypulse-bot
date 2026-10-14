@@ -83,12 +83,37 @@ python client_demo.py
 
 ---
 
-## 🌐 Как бесплатно опубликовать в интернет (24/7)
+## 🌐 Бесплатный хостинг 24/7 (Развертывание в 1 клик)
 
-1. Загрузите файлы этого репозитория на **GitHub**.
-2. Зарегистрируйтесь на **[Render.com](https://render.com)** (полностью бесплатный тариф).
-3. Создайте **New Web Service** → выберите ваш репозиторий.
-4. Укажите:
-   * **Build Command:** `pip install -r requirements.txt`
-   * **Start Command:** `uvicorn app:app --host 0.0.0.0 --port $PORT`
-5. Вы получите бесплатный публичный адрес (например: `https://my-keys-api.onrender.com`), который можно прописать в `client_demo.py` или на вашем сайте!
+Проект полностью оптимизирован для работы 24/7 на бесплатных облачных хостингах без засыпания:
+- **Telegram-бот** и **Веб-панель** объединены в `main.py` и работают в едином процессе.
+- Встроен фоновый **Keep-Alive модуль**, который пингует сервер каждые 10 минут, предотвращая переход в спящий режим.
+- За пределами РФ Telegram API работает напрямую без необходимости искать сторонние прокси.
+
+---
+
+### Вариант 1: Render.com (Самый быстрый запуск в 1 клик)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/saveliy310509-hue/keypulse-bot)
+
+1. Нажмите на кнопку выше или перейдите по ссылке:
+   **[Развернуть на Render в 1 клик](https://render.com/deploy?repo=https://github.com/saveliy310509-hue/keypulse-bot)**
+2. Войдите через ваш GitHub-аккаунт.
+3. Укажите переменные окружения:
+   * `TOKENBOT`: токен вашего бота от `@BotFather`
+   * `ADMINID`: ваш Telegram ID
+4. Нажмите **«Apply»** / **«Create Web Service»**.
+5. Render автоматически соберет проект и запустит сервер и бота 24/7. В панели появится ваш публичный домен (например: `https://keypulse-bot.onrender.com`).
+
+---
+
+### Вариант 2: Koyeb (Eco Tier 24/7 без засыпания)
+
+1. Зайдите на **[Koyeb.com](https://app.koyeb.com/)** и нажмите **«Create Service»**.
+2. Выберите **GitHub** → репозиторий `saveliy310509-hue/keypulse-bot`.
+3. Тип сборки: **Dockerfile** (или Buildpack `python main.py`).
+4. В разделе **Environment Variables** добавьте:
+   * `TOKENBOT` = ваш токен бота
+   * `ADMINID` = ваш Telegram ID
+5. Нажмите **«Deploy»**. Бесплатный тариф Eco Nano держит контейнер запущенным 24/7!
+
