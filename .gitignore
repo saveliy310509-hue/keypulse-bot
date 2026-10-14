@@ -1,0 +1,20 @@
+# Секреты и локальное окружение
+.env
+.env.*
+
+# Временные файлы Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Локальные прокси
+working_proxy.txt
+found_proxy.txt
+
+# Локальные базы данных (создаются автоматически на хосте)
+licenses.db
+
+# Редакторы кода
+.idea/
+.vscode/

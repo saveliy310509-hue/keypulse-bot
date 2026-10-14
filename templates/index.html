@@ -1,0 +1,2074 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="default">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEYPULSE.AI — Система Лицензирования и HWID Защиты</title>
+    <!-- Шрифты AMPER.AI -->
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --accent: #c8ff00;
+            --accent-dark: #a5d600;
+            --accent-glow: rgba(200, 255, 0, 0.28);
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-hover: #1a1a1a;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(200, 255, 0, 0.4);
+            --text: #ffffff;
+            --text-dim: #888888;
+            --text-muted: #555555;
+            --font: 'JetBrains Mono', monospace;
+            --display-font: 'Chakra Petch', 'JetBrains Mono', monospace;
+            
+            /* Admin Mode Colors */
+            --admin-gold: #ffb800;
+            --admin-glow: rgba(255, 184, 0, 0.4);
+        }
+
+        /* Темы оформления (AMPER.AI) */
+        [data-theme="default"] {
+            --accent: #c8ff00;
+            --accent-dark: #a5d600;
+            --accent-glow: rgba(200, 255, 0, 0.28);
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-hover: #1a1a1a;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: #888888;
+        }
+
+        [data-theme="matrix"] {
+            --accent: #00FF41;
+            --accent-dark: #00CC33;
+            --accent-glow: rgba(0, 255, 65, 0.35);
+            --bg: #000000;
+            --bg-card: #0a0a0a;
+            --bg-card-hover: #111111;
+            --border: rgba(0, 255, 65, 0.2);
+            --text: #00FF41;
+            --text-dim: #66FF99;
+        }
+
+        [data-theme="synthwave"] {
+            --accent: #FF2E63;
+            --accent-dark: #CC244F;
+            --accent-glow: rgba(255, 46, 99, 0.35);
+            --bg: #0f0f23;
+            --bg-card: #1a1a3a;
+            --bg-card-hover: #252550;
+            --border: rgba(255, 46, 99, 0.25);
+            --text: #F0F0F0;
+            --text-dim: #B0B0FF;
+        }
+
+        [data-theme="nord"] {
+            --accent: #88C0D0;
+            --accent-dark: #81A1C1;
+            --accent-glow: rgba(136, 192, 208, 0.35);
+            --bg: #2E3440;
+            --bg-card: #3B4252;
+            --bg-card-hover: #434C5E;
+            --border: rgba(136, 192, 208, 0.2);
+            --text: #ECEFF4;
+            --text-dim: #D8DEE9;
+        }
+
+        [data-theme="nether"] {
+            --accent: #FF4500;
+            --accent-dark: #CC3700;
+            --accent-glow: rgba(255, 69, 0, 0.35);
+            --bg: #1a0000;
+            --bg-card: #2a0000;
+            --bg-card-hover: #3a0000;
+            --border: rgba(255, 69, 0, 0.25);
+            --text: #FFDAB9;
+            --text-dim: #FFB78C;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* Фоновая сетка 60x60px */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* SVG Иконки */
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+        .icon svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        /* Навигация (Navbar) */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 36px;
+            background: rgba(10,10,10,0.88);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: var(--display-font);
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-transform: uppercase;
+        }
+        .nav-logo span { color: var(--accent); }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Индикатор статуса */
+        .status-ribbon {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.8); opacity: 0.5; }
+        }
+
+        /* ==================== РЕЖИМ АДМИНА (КНОПКА / ПЕРЕКЛЮЧАТЕЛЬ) ==================== */
+        .admin-toggle-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #111;
+            color: var(--text-dim);
+            font-family: var(--display-font);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-toggle-btn:hover {
+            border-color: var(--admin-gold);
+            color: #ffffff;
+        }
+
+        .admin-toggle-btn.active {
+            background: linear-gradient(135deg, rgba(255, 184, 0, 0.18), rgba(255, 80, 0, 0.15));
+            border-color: var(--admin-gold);
+            color: var(--admin-gold);
+            box-shadow: 0 0 24px var(--admin-glow), inset 0 0 12px rgba(255, 184, 0, 0.2);
+            animation: adminGlowPulse 2.5s infinite ease-in-out;
+        }
+
+        .admin-toggle-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #555;
+            transition: all 0.3s;
+        }
+
+        .admin-toggle-btn.active .admin-toggle-indicator {
+            background: var(--admin-gold);
+            box-shadow: 0 0 10px var(--admin-gold);
+            animation: pulseDot 1.2s infinite ease-in-out;
+        }
+
+        @keyframes adminGlowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 184, 0, 0.35); }
+            50% { box-shadow: 0 0 35px rgba(255, 184, 0, 0.65); }
+        }
+
+        /* Баннер режима админа */
+        .admin-banner {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            background: linear-gradient(90deg, rgba(255, 184, 0, 0.12), rgba(255, 80, 0, 0.08));
+            border: 1px solid rgba(255, 184, 0, 0.35);
+            border-radius: 12px;
+            color: #ffe699;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            animation: fadeInDown 0.3s ease;
+        }
+
+        .admin-banner.show {
+            display: flex;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Кнопки */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #111;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            text-decoration: none;
+            outline: none;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            background: #181818;
+            color: var(--text);
+        }
+
+        .btn:active { transform: scale(0.97); }
+
+        .btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            font-weight: 800;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .btn.primary:hover {
+            background: var(--accent-dark);
+            border-color: var(--accent-dark);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .btn.outline {
+            background: transparent;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn.outline:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn.danger {
+            border-color: rgba(255, 75, 75, 0.35);
+            color: #ff6b6b;
+        }
+
+        .btn.danger:hover {
+            background: rgba(255, 75, 75, 0.15);
+            border-color: #ff6b6b;
+        }
+
+        .btn.icon-only {
+            padding: 8px;
+            width: 34px;
+            height: 34px;
+        }
+
+        /* Селектор темы */
+        .theme-select {
+            padding: 7px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #111;
+            color: var(--text-dim);
+            font-family: var(--font);
+            font-size: 11px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Главная оболочка */
+        main {
+            position: relative;
+            z-index: 1;
+            max-width: 1380px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 36px 36px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .page-header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: fit-content;
+            padding: 5px 14px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-family: var(--display-font);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 4px;
+        }
+
+        .page-title {
+            font-family: var(--display-font);
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        .page-desc {
+            font-size: 13px;
+            color: var(--text-dim);
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            max-width: 700px;
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+        }
+
+        .stat-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .stat-value {
+            font-family: var(--display-font);
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .stat-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Таблица и Тулбар */
+        .dashboard-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px;
+            background: #0e0e0e;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 7px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover { color: var(--text); }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #000;
+            font-weight: 800;
+        }
+
+        .tab-badge {
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-size: 10px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(0,0,0,0.2);
+            color: #000;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 280px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 9px 14px 9px 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0e0e0e;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 12px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 14px var(--accent-glow);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-dim);
+            pointer-events: none;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #0d0d0d;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        thead {
+            background: #141414;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            padding: 14px 18px;
+            font-family: var(--display-font);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.2s ease, transform 0.25s ease, opacity 0.25s ease;
+        }
+
+        tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+        td { padding: 14px 18px; color: var(--text); }
+
+        .key-text {
+            font-family: var(--font);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.available {
+            background: rgba(200, 255, 0, 0.08);
+            border: 1px solid rgba(200, 255, 0, 0.35);
+            color: var(--accent);
+        }
+
+        .badge.activated {
+            background: rgba(100, 184, 255, 0.08);
+            border: 1px solid rgba(100, 184, 255, 0.35);
+            color: #64b8ff;
+        }
+
+        .badge.blocked {
+            background: rgba(255, 75, 75, 0.08);
+            border: 1px solid rgba(255, 75, 75, 0.35);
+            color: #ff6b6b;
+        }
+
+        .badge.expired {
+            background: rgba(255, 184, 0, 0.08);
+            border: 1px solid rgba(255, 184, 0, 0.35);
+            color: #ffb800;
+        }
+
+        .hwid-tag {
+            font-family: var(--font);
+            font-size: 11px;
+            color: #64b8ff;
+            background: rgba(100,184,255,0.06);
+            border: 1px solid rgba(100,184,255,0.2);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .row-deleted {
+            transform: translateX(40px);
+            opacity: 0 !important;
+            pointer-events: none;
+        }
+
+        /* ==================== ФУТУРИСТИЧЕСКОЕ ОКНО ГЕНЕРАЦИИ (1000x КРАСИВЕЕ) ==================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 500;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(16px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        /* Кибернетический контейнер модалки */
+        .cyber-modal {
+            background: #0d0d10;
+            border: 1px solid rgba(200, 255, 0, 0.25);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 640px;
+            box-shadow: 
+                0 30px 100px rgba(0, 0, 0, 0.8),
+                0 0 45px var(--accent-glow),
+                inset 0 0 20px rgba(200, 255, 0, 0.03);
+            position: relative;
+            overflow: hidden;
+            animation: cyberModalEntry 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cyberModalEntry {
+            from { opacity: 0; transform: scale(0.92) translateY(20px); filter: blur(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+
+        /* Неоновая линия сканирования сверху */
+        .cyber-modal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: scanlineSweep 3.5s infinite linear;
+        }
+
+        @keyframes scanlineSweep {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        .cyber-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px;
+            background: linear-gradient(180deg, #15151b 0%, #101015 100%);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .cyber-modal-title {
+            font-family: var(--display-font);
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cyber-modal-title span.glow-accent {
+            color: var(--accent);
+            text-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .cyber-modal-body {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            max-height: calc(85vh - 120px);
+            overflow-y: auto;
+        }
+
+        /* ГОЛОГРАФИЧЕСКИЙ ПРЕВЬЮ-БЛОК КЛЮЧА */
+        .holo-preview-card {
+            background: linear-gradient(135deg, rgba(200, 255, 0, 0.06), rgba(0, 0, 0, 0.6));
+            border: 1px solid rgba(200, 255, 0, 0.3);
+            border-radius: 14px;
+            padding: 16px 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 24px rgba(200, 255, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .holo-preview-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 10px;
+            font-family: var(--display-font);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-dim);
+        }
+
+        .holo-preview-meta span.active-pulse {
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .holo-preview-key {
+            font-family: var(--font);
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .holo-preview-key span.preview-prefix {
+            color: var(--accent);
+            text-shadow: 0 0 14px var(--accent-glow);
+        }
+
+        .holo-shuffle-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-dim);
+            padding: 4px 10px;
+            font-size: 11px;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .holo-shuffle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* КИБЕР-ВЫБОР КОЛИЧЕСТВА */
+        .count-stepper-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #09090c;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 14px;
+        }
+
+        .stepper-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #15151c;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .stepper-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: #1f1f2a;
+        }
+
+        .count-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .count-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .count-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .count-number-display {
+            font-family: var(--display-font);
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+            min-width: 48px;
+            text-align: right;
+        }
+
+        /* КАРТОЧКИ ВЫБОРА СРОКА ДЕЙСТВИЯ */
+        .duration-card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .duration-card {
+            background: #0c0c10;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            user-select: none;
+        }
+
+        .duration-card:hover {
+            border-color: rgba(200, 255, 0, 0.4);
+            transform: translateY(-2px);
+            background: #14141c;
+        }
+
+        .duration-card.selected {
+            border-color: var(--accent);
+            background: rgba(200, 255, 0, 0.08);
+            box-shadow: 0 0 18px var(--accent-glow);
+        }
+
+        .duration-card-title {
+            font-family: var(--display-font);
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .duration-card.selected .duration-card-title {
+            color: var(--accent);
+        }
+
+        .duration-card-sub {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        /* БЛОК СВЕЖЕСГЕНЕРИРОВАННЫХ КЛЮЧЕЙ (РЕЗУЛЬТАТ) */
+        .gen-result-drawer {
+            display: none;
+            background: #08080a;
+            border: 1px solid var(--accent);
+            border-radius: 14px;
+            padding: 16px;
+            gap: 12px;
+            flex-direction: column;
+            box-shadow: 0 0 30px var(--accent-glow);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .gen-result-drawer.show {
+            display: flex;
+        }
+
+        .gen-result-list {
+            max-height: 140px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 4px;
+        }
+
+        .gen-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #111116;
+            border: 1px solid rgba(255,255,255,0.06);
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .gen-result-item span.key-val {
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+
+        /* Модалка Тестера */
+        .terminal-shell {
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #090909;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #121212;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dots { display: flex; gap: 6px; }
+        .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #febc2e; }
+        .terminal-dot.green { background: #28c840; }
+
+        .terminal-title {
+            font-size: 11px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            margin-left: 6px;
+            font-family: var(--font);
+        }
+
+        .terminal-body {
+            padding: 16px;
+            font-size: 12px;
+            line-height: 1.7;
+            min-height: 120px;
+            max-height: 180px;
+            overflow-y: auto;
+            color: #d1d5db;
+            font-family: var(--font);
+            white-space: pre-wrap;
+            user-select: text;
+        }
+
+        /* Тосты */
+        .toast-box {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 22px;
+            border-radius: 10px;
+            background: #141414;
+            border: 1px solid var(--accent);
+            color: var(--text);
+            font-size: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px var(--accent-glow);
+            transform: translateY(60px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .toast-box.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-box.admin {
+            border-color: var(--admin-gold);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7), 0 0 25px var(--admin-glow);
+        }
+
+        .toast-box.error {
+            border-color: #ff4b4b;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(255,75,75,0.3);
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .duration-card-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            nav { padding: 14px 20px; }
+            main { padding: 20px 20px 60px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .search-box { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== НАВИГАЦИЯ ==================== -->
+    <nav>
+        <div class="nav-logo">
+            <span class="icon" style="width: 24px; height: 24px; color: var(--accent);">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </span>
+            KEYPULSE<span>.AI</span>
+        </div>
+
+        <div class="nav-actions">
+            <!-- Выбор темы AMPER -->
+            <select class="theme-select" id="themeSelect" onchange="changeTheme(this.value)">
+                <option value="default">Тема: AMPER Lime</option>
+                <option value="matrix">Тема: Matrix</option>
+                <option value="synthwave">Тема: Synthwave</option>
+                <option value="nord">Тема: Nord Blue</option>
+                <option value="nether">Тема: Nether Red</option>
+            </select>
+
+            <!-- ==================== КНОПКА: РЕЖИМ АДМИНА ==================== -->
+            <button class="admin-toggle-btn" id="adminToggleBtn" onclick="toggleAdminMode()" title="Включить/выключить режим супер-админа">
+                <span class="icon" style="width: 14px; height: 14px;">
+                    <!-- Crown / Shield Icon SVG -->
+                    <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"></path></svg>
+                </span>
+                <span id="adminToggleText">РЕЖИМ АДМИНА: ВЫКЛ</span>
+                <span class="admin-toggle-indicator"></span>
+            </button>
+
+            <!-- Статус Ribbon -->
+            <div class="status-ribbon">
+                <span class="status-dot"></span>
+                <span>ONLINE // SQLITE</span>
+            </div>
+
+            <!-- Кнопка Тестера -->
+            <button class="btn outline" onclick="openTesterModal()">
+                <span class="icon" style="width: 15px; height: 15px;">
+                    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                </span>
+                <span>Тестер Клиента</span>
+            </button>
+
+            <!-- Кнопка Создания Ключей -->
+            <button class="btn primary" onclick="openGenerateModal()">
+                <span class="icon" style="width: 15px; height: 15px;">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </span>
+                <span>Создать Ключи</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ==================== ГЛАВНЫЙ БЛОК ==================== -->
+    <main>
+
+        <!-- Предупреждающий баннер активного режима админа -->
+        <div class="admin-banner" id="adminBanner">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="icon" style="width: 20px; height: 20px; color: var(--admin-gold);">
+                    <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"></path></svg>
+                </span>
+                <div>
+                    <strong style="color: var(--admin-gold);">РЕЖИМ АДМИНИСТРАТОРА АКТИВЕН:</strong>
+                    <span>Вы можете активировать абсолютно любые ключи бесконечное количество раз на любых устройствах! Все проверки HWID и одноразовости отключены.</span>
+                </div>
+            </div>
+            <button class="btn danger" style="padding: 4px 10px; font-size: 11px;" onclick="toggleAdminMode()">Отключить</button>
+        </div>
+
+        <!-- Заголовок страницы -->
+        <header class="page-header">
+            <div class="section-badge">
+                <span class="icon" style="width: 12px; height: 12px;">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </span>
+                СИСТЕМА ЛИЦЕНЗИРОВАНИЯ // HWID BIND
+            </div>
+            <h1 class="page-title">УПРАВЛЕНИЕ КЛЮЧАМИ ДОСТУПА</h1>
+            <p class="page-desc">Одноразовая активация, привязка к железу устройства (HWID) и автоматическая защита от повторного ввода на чужих ПК.</p>
+        </header>
+
+        <!-- Карточки статистики -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-head">
+                    <span class="stat-label">Всего в базе</span>
+                    <div class="stat-icon">
+                        <span class="icon" style="width: 18px; height: 18px;">
+                            <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-sub">лицензий сгенерировано</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-head">
+                    <span class="stat-label">Свободны для ввода</span>
+                    <div class="stat-icon">
+                        <span class="icon" style="width: 18px; height: 18px;">
+                            <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-value" id="stat-available">0</div>
+                <div class="stat-sub">готовы к выдаче клиентам</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-head">
+                    <span class="stat-label">Активированы (HWID)</span>
+                    <div class="stat-icon">
+                        <span class="icon" style="width: 18px; height: 18px; color: #64b8ff;">
+                            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-value" id="stat-activated" style="color: #64b8ff;">0</div>
+                <div class="stat-sub">привязаны к ПК пользователей</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-head">
+                    <span class="stat-label">Заблокированы</span>
+                    <div class="stat-icon">
+                        <span class="icon" style="width: 18px; height: 18px; color: #ff6b6b;">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="stat-value" id="stat-blocked" style="color: #ff6b6b;">0</div>
+                <div class="stat-sub">отключены или истекли</div>
+            </div>
+        </section>
+
+        <!-- Таблица и Тулбар -->
+        <section class="dashboard-panel">
+            
+            <div class="panel-toolbar">
+                <div class="filter-tabs">
+                    <button class="tab-btn active" id="tab-all" onclick="setFilter('all')">
+                        <span>Все</span>
+                        <span class="tab-badge" id="badge-all">0</span>
+                    </button>
+                    <button class="tab-btn" id="tab-available" onclick="setFilter('available')">
+                        <span>Свободные</span>
+                        <span class="tab-badge" id="badge-available">0</span>
+                    </button>
+                    <button class="tab-btn" id="tab-activated" onclick="setFilter('activated')">
+                        <span>Активированные</span>
+                        <span class="tab-badge" id="badge-activated">0</span>
+                    </button>
+                    <button class="tab-btn" id="tab-blocked" onclick="setFilter('blocked')">
+                        <span>Заблокированные</span>
+                        <span class="tab-badge" id="badge-blocked">0</span>
+                    </button>
+                </div>
+
+                <div class="toolbar-actions">
+                    <div class="search-box">
+                        <span class="icon search-icon">
+                            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </span>
+                        <input type="text" id="searchInput" oninput="debounceSearch()" placeholder="Поиск по ключу, HWID или заметке...">
+                    </div>
+
+                    <button class="btn" onclick="exportUnusedKeys()" title="Скачать список свободных ключей в TXT">
+                        <span class="icon" style="width: 15px; height: 15px;">
+                            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        </span>
+                        <span>Экспорт TXT</span>
+                    </button>
+
+                    <button class="btn icon-only" onclick="loadKeys()" title="Обновить список">
+                        <span class="icon" style="width: 15px; height: 15px;">
+                            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ключ Лицензии</th>
+                            <th>Статус</th>
+                            <th>Срок</th>
+                            <th>Привязанный HWID</th>
+                            <th>Заметка</th>
+                            <th>Создан / Активация</th>
+                            <th style="text-align: right;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="keysTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-dim);">
+                                Загрузка базы лицензий...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ==================== КИБЕРНЕТИЧЕСКОЕ ОКНО ГЕНЕРАЦИИ (1000x КРАСИВЕЕ) ==================== -->
+    <div class="modal-overlay" id="generateModal">
+        <div class="cyber-modal">
+            
+            <!-- Хедер модалки -->
+            <div class="cyber-modal-head">
+                <div class="cyber-modal-title">
+                    <span class="icon glow-accent" style="width: 22px; height: 22px;">
+                        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </span>
+                    <span>ГЕНЕРАТОР <span class="glow-accent">ЛИЦЕНЗИЙ</span></span>
+                </div>
+                <button class="btn icon-only" onclick="closeGenerateModal()">
+                    <span class="icon" style="width: 14px; height: 14px;">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Тело модалки -->
+            <div class="cyber-modal-body">
+                
+                <!-- ГОЛОГРАФИЧЕСКИЙ ЖИВОЙ ПРЕВЬЮ-БЛОК -->
+                <div class="holo-preview-card">
+                    <div class="holo-preview-meta">
+                        <span class="active-pulse">
+                            <span class="status-dot" style="width: 6px; height: 6px;"></span>
+                            ЖИВОЙ ОБРАЗЕЦ КЛЮЧА
+                        </span>
+                        <span>SHA-256 ENCRYPTED</span>
+                    </div>
+
+                    <div class="holo-preview-key">
+                        <div>
+                            <span class="preview-prefix" id="previewPrefixText">PRO</span>-<span id="previewRandomText">7F8A-4D2B-9C1E</span>
+                        </div>
+                        <button type="button" class="holo-shuffle-btn" onclick="shufflePreviewKey()">
+                            <span class="icon" style="width: 12px; height: 12px;">
+                                <svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                            </span>
+                            <span>Случайно</span>
+                        </button>
+                    </div>
+
+                    <div style="font-size: 10px; color: var(--text-dim); display: flex; justify-content: space-between;">
+                        <span>Длина: 16 символов</span>
+                        <span id="previewDurationBadge" style="color: var(--accent);">Срок: 30 Дней</span>
+                    </div>
+                </div>
+
+                <!-- БЛОК СВЕЖЕСГЕНЕРИРОВАННЫХ КЛЮЧЕЙ (появляется после клика) -->
+                <div class="gen-result-drawer" id="genResultDrawer">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 11px; font-weight: 800; color: var(--accent); letter-spacing: 1px; font-family: var(--display-font);">
+                            ГОТОВО! СГЕНЕРИРОВАНО: <span id="genResultCount">0</span> КЛЮЧЕЙ
+                        </span>
+                        <button class="btn primary" style="padding: 4px 10px; font-size: 10px;" onclick="copyAllGeneratedKeys()">
+                            Скопировать Все Сразу
+                        </button>
+                    </div>
+                    <div class="gen-result-list" id="genResultList"></div>
+                </div>
+
+                <!-- 1. КОЛИЧЕСТВО КЛЮЧЕЙ (ИНТЕРАКТИВНЫЙ СТЕППЕР + СЛАЙДЕР) -->
+                <div class="field-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                        <label class="field-label">КОЛИЧЕСТВО КЛЮЧЕЙ</label>
+                        <span style="font-size: 11px; color: var(--text-dim);">Максимум: 500 шт.</span>
+                    </div>
+                    <div class="count-stepper-box">
+                        <button type="button" class="stepper-btn" onclick="adjustCount(-1)">−</button>
+                        <input type="range" class="count-slider" id="genCountSlider" min="1" max="100" value="5" oninput="syncCountSlider(this.value)">
+                        <button type="button" class="stepper-btn" onclick="adjustCount(1)">+</button>
+                        <span class="count-number-display" id="countDisplayNum">5</span>
+                    </div>
+
+                    <div class="quick-tags" style="margin-top: 6px;">
+                        <button type="button" class="tag-btn" onclick="setCount(1)">1 шт.</button>
+                        <button type="button" class="tag-btn" onclick="setCount(5)">5 шт.</button>
+                        <button type="button" class="tag-btn" onclick="setCount(10)">10 шт.</button>
+                        <button type="button" class="tag-btn" onclick="setCount(25)">25 шт.</button>
+                        <button type="button" class="tag-btn" onclick="setCount(50)">50 шт.</button>
+                        <button type="button" class="tag-btn" onclick="setCount(100)">100 шт.</button>
+                    </div>
+                </div>
+
+                <!-- 2. ПРЕФИКС СЕРИИ -->
+                <div class="field-group">
+                    <label class="field-label">ПРЕФИКС СЕРИИ (ТЕГ)</label>
+                    <input type="text" id="genPrefixInput" value="PRO" placeholder="VIP, APP, GAME..." class="field-input" style="text-transform: uppercase;" oninput="updateLivePrefix(this.value)">
+                    <div class="quick-tags">
+                        <button type="button" class="tag-btn" onclick="setPrefix('PRO')">PRO</button>
+                        <button type="button" class="tag-btn" onclick="setPrefix('VIP')">VIP</button>
+                        <button type="button" class="tag-btn" onclick="setPrefix('GAME')">GAME</button>
+                        <button type="button" class="tag-btn" onclick="setPrefix('ELITE')">ELITE</button>
+                        <button type="button" class="tag-btn" onclick="setPrefix('ALPHA')">ALPHA</button>
+                    </div>
+                </div>
+
+                <!-- 3. КАРТОЧКИ СРОКА ДЕЙСТВИЯ -->
+                <div class="field-group">
+                    <label class="field-label">СРОК ДЕЙСТВИЯ ЛИЦЕНЗИИ</label>
+                    <input type="hidden" id="genDurationVal" value="30">
+                    <div class="duration-card-grid">
+                        <div class="duration-card" id="dur-0" onclick="selectDuration(0, 'Бессрочная')">
+                            <span class="icon" style="width: 18px; height: 18px; color: var(--accent);">
+                                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            </span>
+                            <span class="duration-card-title">LIFETIME</span>
+                            <span class="duration-card-sub">Бессрочно</span>
+                        </div>
+
+                        <div class="duration-card" id="dur-7" onclick="selectDuration(7, '7 Дней')">
+                            <span class="icon" style="width: 18px; height: 18px; color: #64b8ff;">
+                                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </span>
+                            <span class="duration-card-title">7 ДНЕЙ</span>
+                            <span class="duration-card-sub">Тестовый</span>
+                        </div>
+
+                        <div class="duration-card selected" id="dur-30" onclick="selectDuration(30, '30 Дней')">
+                            <span class="icon" style="width: 18px; height: 18px; color: var(--accent);">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            </span>
+                            <span class="duration-card-title">30 ДНЕЙ</span>
+                            <span class="duration-card-sub">1 Месяц</span>
+                        </div>
+
+                        <div class="duration-card" id="dur-365" onclick="selectDuration(365, '365 Дней')">
+                            <span class="icon" style="width: 18px; height: 18px; color: var(--admin-gold);">
+                                <svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"></path></svg>
+                            </span>
+                            <span class="duration-card-title">365 ДНЕЙ</span>
+                            <span class="duration-card-sub">1 Год</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. ЗАМЕТКА С ТЕГАМИ -->
+                <div class="field-group">
+                    <label class="field-label">ПРИМЕЧАНИЕ / КЛИЕНТ</label>
+                    <input type="text" id="genNoteInput" placeholder="Например: Партия для клиентов Telegram @username" class="field-input">
+                    <div class="quick-tags">
+                        <button type="button" class="tag-btn" onclick="addNoteTag('@Telegram')">@Telegram</button>
+                        <button type="button" class="tag-btn" onclick="addNoteTag('Discord VIP')">Discord VIP</button>
+                        <button type="button" class="tag-btn" onclick="addNoteTag('Тестер')">Тестер</button>
+                        <button type="button" class="tag-btn" onclick="addNoteTag('Продажа')">Продажа</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Футер модалки -->
+            <div class="cyber-modal-head" style="border-top: 1px solid var(--border); border-bottom: none; background: #0b0b0e; padding: 16px 28px;">
+                <button class="btn" onclick="closeGenerateModal()">Отмена</button>
+                <button class="btn primary" id="btnSubmitGen" style="padding: 10px 24px; font-size: 13px;" onclick="submitGenerate()">
+                    <span class="icon" style="width: 16px; height: 16px;">
+                        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    </span>
+                    <span>Сгенерировать Партию</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== МОДАЛКА: ТЕСТЕР (СИМУЛЯТОР КЛИЕНТА) ==================== -->
+    <div class="modal-overlay" id="testerModal">
+        <div class="cyber-modal" style="max-width: 620px;">
+            <div class="cyber-modal-head">
+                <div class="cyber-modal-title">
+                    <span class="icon glow-accent" style="width: 20px; height: 20px;">
+                        <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    </span>
+                    <span>СИМУЛЯТОР <span class="glow-accent">КЛИЕНТСКОГО ПК</span></span>
+                </div>
+                <button class="btn icon-only" onclick="closeTesterModal()">
+                    <span class="icon" style="width: 14px; height: 14px;">
+                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </span>
+                </button>
+            </div>
+
+            <div class="cyber-modal-body">
+                <div id="testerAdminNotice" style="display: none; padding: 10px 14px; border-radius: 8px; background: rgba(255,184,0,0.12); border: 1px solid var(--admin-gold); color: #ffe58f; font-size: 11px;">
+                    👑 <strong>ВНИМАНИЕ:</strong> Включен Режим Админа! Вы можете вводить любые ключи бесконечное число раз без привязки к HWID.
+                </div>
+
+                <div class="field-group">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <label class="field-label">Виртуальный HWID ПК</label>
+                        <button type="button" class="btn" style="padding: 3px 8px; font-size: 10px;" onclick="randomizeHwid()">
+                            <span class="icon" style="width: 12px; height: 12px;">
+                                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            </span>
+                            <span>Сменить ПК</span>
+                        </button>
+                    </div>
+                    <input type="text" id="testHwid" class="field-input" style="color: #64b8ff; font-weight: 700;">
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label">Ключ Лицензии</label>
+                    <input type="text" id="testKey" placeholder="Вставьте ключ для проверки..." class="field-input" style="text-transform: uppercase;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn primary" onclick="simulateActivate()">
+                        <span class="icon" style="width: 14px; height: 14px;">
+                            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </span>
+                        <span>1. Активировать</span>
+                    </button>
+
+                    <button class="btn" onclick="simulateVerify()">
+                        <span class="icon" style="width: 14px; height: 14px;">
+                            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </span>
+                        <span>2. Проверить Доступ</span>
+                    </button>
+                </div>
+
+                <div class="terminal-shell">
+                    <div class="terminal-header">
+                        <div class="terminal-dots">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                        <span class="terminal-title">TERMINAL // CLIENT_LOG</span>
+                    </div>
+                    <pre class="terminal-body" id="testOutput">Ожидание команды...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ПЛАВАЮЩИЙ ТОСТ ==================== -->
+    <div class="toast-box" id="toastBox">
+        <span class="icon" id="toastIcon" style="width: 18px; height: 18px; color: var(--accent);">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </span>
+        <span id="toastMsg" style="font-weight: 600;">Уведомление</span>
+    </div>
+
+    <!-- ==================== СКРИПТ УПРАВЛЕНИЯ ==================== -->
+    <script>
+        let currentFilter = 'all';
+        let searchTimer = null;
+        let isAdminMode = false;
+        let lastGeneratedKeys = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('amper_theme') || 'default';
+            changeTheme(savedTheme);
+            document.getElementById('themeSelect').value = savedTheme;
+
+            // Восстановление режима админа
+            isAdminMode = localStorage.getItem('keypulse_admin_mode') === 'true';
+            updateAdminModeUI();
+
+            randomizeHwid();
+            loadStats();
+            loadKeys();
+            shufflePreviewKey();
+
+            // Закрытие по ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeGenerateModal();
+                    closeTesterModal();
+                }
+            });
+        });
+
+        // ==================== РЕЖИМ АДМИНИСТРАТОРА ====================
+        function toggleAdminMode() {
+            isAdminMode = !isAdminMode;
+            localStorage.setItem('keypulse_admin_mode', isAdminMode);
+            updateAdminModeUI();
+
+            if (isAdminMode) {
+                showToast('👑 РЕЖИМ АДМИНА ВКЛЮЧЕН: Любые ключи активируются бесконечно!', false, true);
+            } else {
+                showToast('Режим админа выключен. Включена строгая проверка HWID.');
+            }
+        }
+
+        function updateAdminModeUI() {
+            const btn = document.getElementById('adminToggleBtn');
+            const text = document.getElementById('adminToggleText');
+            const banner = document.getElementById('adminBanner');
+            const testerNotice = document.getElementById('testerAdminNotice');
+
+            if (isAdminMode) {
+                btn.classList.add('active');
+                text.innerText = '👑 РЕЖИМ АДМИНА: ВКЛ';
+                banner.classList.add('show');
+                if (testerNotice) testerNotice.style.display = 'block';
+            } else {
+                btn.classList.remove('active');
+                text.innerText = 'РЕЖИМ АДМИНА: ВЫКЛ';
+                banner.classList.remove('show');
+                if (testerNotice) testerNotice.style.display = 'none';
+            }
+        }
+
+        // Смена темы
+        function changeTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('amper_theme', themeName);
+        }
+
+        // Всплывающее уведомление (Toast)
+        function showToast(msg, isError = false, isAdmin = false) {
+            const toast = document.getElementById('toastBox');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            toast.className = 'toast-box';
+
+            if (isError) {
+                toast.classList.add('error');
+                toastIcon.style.color = '#ff4b4b';
+                toastIcon.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+            } else if (isAdmin) {
+                toast.classList.add('admin');
+                toastIcon.style.color = 'var(--admin-gold)';
+                toastIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"></path></svg>`;
+            } else {
+                toastIcon.style.color = 'var(--accent)';
+                toastIcon.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            }
+
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Ключ скопирован в буфер: ${text}`);
+            });
+        }
+
+        // Загрузка статистики
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+
+                document.getElementById('stat-total').innerText = data.total;
+                document.getElementById('stat-available').innerText = data.available;
+                document.getElementById('stat-activated').innerText = data.activated;
+                document.getElementById('stat-blocked').innerText = (data.blocked + data.expired);
+
+                document.getElementById('badge-all').innerText = data.total;
+                document.getElementById('badge-available').innerText = data.available;
+                document.getElementById('badge-activated').innerText = data.activated;
+                document.getElementById('badge-blocked').innerText = (data.blocked + data.expired);
+            } catch (e) {
+                console.error('Ошибка загрузки статистики:', e);
+            }
+        }
+
+        // Загрузка ключей
+        async function loadKeys() {
+            const tbody = document.getElementById('keysTableBody');
+            const search = document.getElementById('searchInput').value.trim();
+
+            let url = `/api/keys?status=${currentFilter}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+
+            try {
+                const res = await fetch(url);
+                const keys = await res.json();
+
+                if (!keys || keys.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-dim);">
+                                <div style="font-size: 13px; font-weight: 600; color: var(--text);">Ключи не найдены</div>
+                                <div style="font-size: 11px; margin-top: 4px;">Смените фильтр или создайте новую партию ключей</div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = keys.map(k => {
+                    let badgeClass = 'available';
+                    let badgeText = 'Свободен';
+
+                    if (k.status === 'activated') {
+                        badgeClass = 'activated';
+                        badgeText = 'Активирован';
+                    } else if (k.status === 'blocked') {
+                        badgeClass = 'blocked';
+                        badgeText = 'Заблокирован';
+                    } else if (k.status === 'expired') {
+                        badgeClass = 'expired';
+                        badgeText = 'Истек';
+                    }
+
+                    const duration = k.duration_days === 0 ? 'Бессрочный' : `${k.duration_days} дн.`;
+                    const hwidHtml = k.hwid ? `<span class="hwid-tag" title="${k.hwid}">${k.hwid.substring(0, 15)}...</span>` : `<span style="color: var(--text-muted);">—</span>`;
+                    const dates = `
+                        <div style="font-size: 11px; color: var(--text-dim);">С: ${k.created_at.split(' ')[0]}</div>
+                        ${k.activated_at ? `<div style="font-size: 10px; color: #64b8ff;">Акт: ${k.activated_at.split(' ')[0]}</div>` : ''}
+                    `;
+
+                    return `
+                        <tr id="row-${k.key_code}">
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="key-text">${k.key_code}</span>
+                                    <button class="btn icon-only" style="width: 26px; height: 26px; padding: 4px;" onclick="copyText('${k.key_code}')" title="Скопировать">
+                                        <span class="icon" style="width: 12px; height: 12px;">
+                                            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </td>
+                            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                            <td style="color: var(--accent); font-weight: 600;">${duration}</td>
+                            <td>${hwidHtml}</td>
+                            <td style="color: var(--text-dim); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${k.note || '—'}</td>
+                            <td>${dates}</td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                    ${k.hwid ? `
+                                        <button class="btn icon-only" style="width: 28px; height: 28px; padding: 5px;" onclick="resetHwid('${k.key_code}')" title="Сбросить HWID привязку">
+                                            <span class="icon" style="width: 13px; height: 13px; color: #febc2e;">
+                                                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                                            </span>
+                                        </button>
+                                    ` : ''}
+
+                                    <button class="btn icon-only" style="width: 28px; height: 28px; padding: 5px;" onclick="toggleBlock('${k.key_code}')" title="${k.status === 'blocked' ? 'Разблокировать' : 'Заблокировать'}">
+                                        <span class="icon" style="width: 13px; height: 13px; color: ${k.status === 'blocked' ? '#ff6b6b' : 'var(--text-dim)'};">
+                                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                                        </span>
+                                    </button>
+
+                                    <!-- Мгновенное удаление БЕЗ подтверждения -->
+                                    <button class="btn icon-only danger" style="width: 28px; height: 28px; padding: 5px;" onclick="deleteKeyDirect('${k.key_code}')" title="Удалить ключ (без подтверждения)">
+                                        <span class="icon" style="width: 13px; height: 13px;">
+                                            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        </span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ff6b6b; padding: 24px;">Ошибка связи с сервером базы данных</td></tr>`;
+            }
+        }
+
+        function setFilter(f) {
+            currentFilter = f;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${f}`).classList.add('active');
+            loadKeys();
+        }
+
+        function debounceSearch() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(loadKeys, 250);
+        }
+
+        // МГНОВЕННОЕ УДАЛЕНИЕ БЕЗ ПОДТВЕРЖДЕНИЯ
+        async function deleteKeyDirect(key) {
+            const row = document.getElementById(`row-${key}`);
+            if (row) row.classList.add('row-deleted');
+
+            try {
+                const res = await fetch(`/api/keys/${key}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast(`Ключ ${key} удален из базы`);
+                    loadStats();
+                    setTimeout(loadKeys, 150);
+                } else {
+                    showToast('Ошибка при удалении', true);
+                    if (row) row.classList.remove('row-deleted');
+                }
+            } catch (e) {
+                showToast('Ошибка сети', true);
+                if (row) row.classList.remove('row-deleted');
+            }
+        }
+
+        async function resetHwid(key) {
+            try {
+                const res = await fetch(`/api/keys/${key}/reset-hwid`, { method: 'POST' });
+                if (res.ok) {
+                    showToast(`HWID для ${key} сброшен`);
+                    loadStats();
+                    loadKeys();
+                }
+            } catch (e) {
+                showToast('Ошибка сброса HWID', true);
+            }
+        }
+
+        async function toggleBlock(key) {
+            try {
+                const res = await fetch(`/api/keys/${key}/toggle-block`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(`Статус изменен: ${data.new_status}`);
+                    loadStats();
+                    loadKeys();
+                }
+            } catch (e) {
+                showToast('Ошибка блокировки', true);
+            }
+        }
+
+        async function exportUnusedKeys() {
+            try {
+                const res = await fetch('/api/keys?status=available');
+                const keys = await res.json();
+                if (!keys || keys.length === 0) {
+                    showToast('Нет свободных ключей для экспорта', true);
+                    return;
+                }
+                const content = keys.map(k => k.key_code).join('\n');
+                const blob = new Blob([content], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `licenses_${new Date().toISOString().slice(0,10)}.txt`;
+                a.click();
+                showToast(`Экспортировано ${keys.length} ключей`);
+            } catch (e) {
+                showToast('Ошибка экспорта', true);
+            }
+        }
+
+        // ==================== ЛОГИКА ОКНА ГЕНЕРАЦИИ (1000x КРАСИВЕЕ) ====================
+        function openGenerateModal() {
+            document.getElementById('generateModal').classList.add('open');
+            document.getElementById('genResultDrawer').classList.remove('show');
+        }
+
+        function closeGenerateModal() {
+            document.getElementById('generateModal').classList.remove('open');
+        }
+
+        // Живой превью рандомайзер
+        function shufflePreviewKey() {
+            const hex = '0123456789ABCDEF';
+            let r1 = '', r2 = '', r3 = '';
+            for (let i = 0; i < 4; i++) {
+                r1 += hex[Math.floor(Math.random() * hex.length)];
+                r2 += hex[Math.floor(Math.random() * hex.length)];
+                r3 += hex[Math.floor(Math.random() * hex.length)];
+            }
+            document.getElementById('previewRandomText').innerText = `${r1}-${r2}-${r3}`;
+        }
+
+        function updateLivePrefix(val) {
+            const p = val.trim().toUpperCase() || 'KEY';
+            document.getElementById('previewPrefixText').innerText = p;
+        }
+
+        function setPrefix(p) {
+            document.getElementById('genPrefixInput').value = p;
+            updateLivePrefix(p);
+        }
+
+        function syncCountSlider(val) {
+            val = Math.max(1, Math.min(500, parseInt(val) || 1));
+            document.getElementById('genCountSlider').value = val;
+            document.getElementById('countDisplayNum').innerText = val;
+        }
+
+        function setCount(n) {
+            syncCountSlider(n);
+        }
+
+        function adjustCount(delta) {
+            const cur = parseInt(document.getElementById('genCountSlider').value) || 1;
+            syncCountSlider(cur + delta);
+        }
+
+        function selectDuration(days, label) {
+            document.getElementById('genDurationVal').value = days;
+            document.querySelectorAll('.duration-card').forEach(c => c.classList.remove('selected'));
+            const card = document.getElementById(`dur-${days}`);
+            if (card) card.classList.add('selected');
+            document.getElementById('previewDurationBadge').innerText = `Срок: ${label}`;
+        }
+
+        function addNoteTag(tag) {
+            const noteInput = document.getElementById('genNoteInput');
+            if (noteInput.value) {
+                noteInput.value += ` | ${tag}`;
+            } else {
+                noteInput.value = tag;
+            }
+        }
+
+        // Отправка генерации
+        async function submitGenerate() {
+            const count = parseInt(document.getElementById('genCountSlider').value);
+            const prefix = document.getElementById('genPrefixInput').value.trim() || 'KEY';
+            const duration = parseInt(document.getElementById('genDurationVal').value);
+            const note = document.getElementById('genNoteInput').value.trim();
+            const btn = document.getElementById('btnSubmitGen');
+
+            btn.disabled = true;
+            btn.innerText = 'Генерация...';
+
+            try {
+                const res = await fetch('/api/keys/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count, prefix, duration_days: duration, note })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    lastGeneratedKeys = data.keys || [];
+                    showToast(`✦ Сгенерировано ${data.count} ключей!`);
+                    loadStats();
+                    loadKeys();
+
+                    // Отображаем ящик результатов прямо в модалке!
+                    const drawer = document.getElementById('genResultDrawer');
+                    const list = document.getElementById('genResultList');
+                    document.getElementById('genResultCount').innerText = data.count;
+
+                    list.innerHTML = data.keys.map(k => `
+                        <div class="gen-result-item">
+                            <span class="key-val">${k}</span>
+                            <button class="btn icon-only" style="width: 24px; height: 24px; padding: 2px;" onclick="copyText('${k}')" title="Скопировать">
+                                <span class="icon" style="width: 12px; height: 12px;"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></span>
+                            </button>
+                        </div>
+                    `).join('');
+
+                    drawer.classList.add('show');
+
+                    // Автоподстановка в тестер
+                    if (data.keys.length > 0) {
+                        document.getElementById('testKey').value = data.keys[0];
+                    }
+                } else {
+                    showToast(data.detail || 'Ошибка генерации', true);
+                }
+            } catch (e) {
+                showToast('Ошибка сети при генерации', true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span class="icon" style="width: 16px; height: 16px;"><svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></span><span>Сгенерировать Партию</span>`;
+            }
+        }
+
+        function copyAllGeneratedKeys() {
+            if (lastGeneratedKeys.length === 0) return;
+            const text = lastGeneratedKeys.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Все ${lastGeneratedKeys.length} ключей скопированы в буфер!`);
+            });
+        }
+
+        // ==================== СИМУЛЯТОР КЛИЕНТА (С ПОДДЕРЖКОЙ РЕЖИМА АДМИНА) ====================
+        function openTesterModal() {
+            document.getElementById('testerModal').classList.add('open');
+            const testerNotice = document.getElementById('testerAdminNotice');
+            if (testerNotice) testerNotice.style.display = isAdminMode ? 'block' : 'none';
+        }
+
+        function closeTesterModal() {
+            document.getElementById('testerModal').classList.remove('open');
+        }
+
+        function randomizeHwid() {
+            const hex = '0123456789ABCDEF';
+            let hwid = 'PC-WIN-';
+            for (let i = 0; i < 12; i++) {
+                hwid += hex[Math.floor(Math.random() * hex.length)];
+            }
+            document.getElementById('testHwid').value = hwid;
+            showToast('Сгенерирован новый HWID устройства');
+        }
+
+        async function simulateActivate() {
+            const key = document.getElementById('testKey').value.trim();
+            const hwid = document.getElementById('testHwid').value.trim();
+            const out = document.getElementById('testOutput');
+
+            if (!key) {
+                showToast('Укажите ключ', true);
+                return;
+            }
+
+            out.innerText = `$ POST /api/client/activate (admin_mode: ${isAdminMode})\nОтправка запроса...`;
+
+            try {
+                const res = await fetch('/api/client/activate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        key: key, 
+                        hwid: hwid, 
+                        admin_mode: isAdminMode 
+                    })
+                });
+                const json = await res.json();
+                out.innerText = `$ POST /api/client/activate [HTTP ${res.status}]\n` + JSON.stringify(json, null, 2);
+
+                if (res.ok) {
+                    if (json.admin_override) {
+                        showToast('👑 Активировано в Режиме Админа (без ограничений)!', false, true);
+                    } else {
+                        showToast('Ключ успешно активирован!');
+                    }
+                    loadStats();
+                    loadKeys();
+                } else {
+                    showToast(json.detail || 'Ошибка активации', true);
+                }
+            } catch (e) {
+                out.innerText = 'Ошибка соединения с сервером';
+            }
+        }
+
+        async function simulateVerify() {
+            const hwid = document.getElementById('testHwid').value.trim();
+            const out = document.getElementById('testOutput');
+
+            out.innerText = `$ POST /api/client/verify (admin_mode: ${isAdminMode})\nПроверка доступа...`;
+
+            try {
+                const res = await fetch('/api/client/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        hwid: hwid, 
+                        admin_mode: isAdminMode 
+                    })
+                });
+                const json = await res.json();
+                out.innerText = `$ POST /api/client/verify [HTTP ${res.status}]\n` + JSON.stringify(json, null, 2);
+
+                if (json.valid) {
+                    showToast(json.message || 'Доступ разрешен!');
+                } else {
+                    showToast('Доступ запрещен', true);
+                }
+            } catch (e) {
+                out.innerText = 'Ошибка соединения с сервером';
+            }
+        }
+    </script>
+</body>
+</html>

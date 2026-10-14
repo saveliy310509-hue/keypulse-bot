@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env
+__pycache__
+*.pyc
+*.log
+working_proxy.txt
+found_proxy.txt
+licenses.db
